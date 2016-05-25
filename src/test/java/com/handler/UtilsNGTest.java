@@ -4,7 +4,6 @@ package com.handler;
 //~--- non-JDK imports --------------------------------------------------------
 
 import handlers.GlobalListener;
-import handlers.Loggable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import static org.testng.Assert.*;

@@ -32,10 +32,10 @@ public class CustomAppender extends AppenderBase<ILoggingEvent>
     }
 
     @Override
-    protected void append(ILoggingEvent e) {
+    protected synchronized void append(ILoggingEvent e) {
 
         events.add(e);
-        System.out.println("Appender event " + e.getMessage());
+        System.out.println("Appender event " + e.getMessage() + " Thread "+Thread.currentThread().getName() + " "+this.hashCode());
 
     }
 

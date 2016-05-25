@@ -1,10 +1,11 @@
 package handlers;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 
 import org.slf4j.LoggerFactory;
@@ -21,7 +22,6 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.Appender;
 
 /**
  * Class description
@@ -32,17 +32,27 @@ import ch.qos.logback.core.Appender;
  */
 @ListenForLog(classes = { Utils.class })
 public class GlobalListener implements org.testng.ITestListener {
-    CustomAppender       appender = new CustomAppender();
-    PatternLayoutEncoder ple      = new PatternLayoutEncoder();
 
+    // Define a hash map as each distinc thread will have distinct appender
+    final static ConcurrentHashMap<String, CustomAppender> appender = new ConcurrentHashMap<>();
+    PatternLayoutEncoder                                   ple      = new PatternLayoutEncoder();
+
+    
+    
+    
     @Override
     public void onFinish(ITestContext itc) {
-        System.out.println("onFinish");
+        System.out.println("onFinish "+getHash(this));
     }
 
+    /**
+     * Here multiple logging queues should be started to separate 
+     * logging streams
+     * @param itc 
+     */
     @Override
     public void onStart(ITestContext itc) {
-        System.out.println("onStart");
+        System.out.println("onStart "+getHash(this));
     }
 
     @Override
@@ -62,6 +72,8 @@ public class GlobalListener implements org.testng.ITestListener {
 
     @Override
     public void onTestStart(ITestResult itr) {
+        System.out.println("Test start : " + getHash(this));
+
         LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
 
         ple.setPattern("%date %level [%thread] %logger %msg%n");
@@ -69,15 +81,24 @@ public class GlobalListener implements org.testng.ITestListener {
         ple.stop();
         ple.start();
 
-        List<Logger> log = getLogger(itr);
+        List<Logger>   log     = getLogger(itr);
+        CustomAppender current = null;
 
-        appender.stop();
-        appender.start();
+        current = appender.get(getHash(this));
+
+        if (current == null) {
+            current = new CustomAppender();
+           
+        }
+
+        current.stop();
+        current.start();
 
         for (Logger l : log) {
-            l.detachAppender(appender);
-            l.addAppender(appender);
+            l.detachAppender(current);
+            l.addAppender(current);
         }
+         appender.put(getHash(this), current);
     }
 
     @Override
@@ -85,21 +106,30 @@ public class GlobalListener implements org.testng.ITestListener {
         writeLog(itr, "SUCCESS");
     }
 
-    public void writeLog(ITestResult itr, String Teststatus) {
-        System.out.println("onTestSuccess");
-        Reporter.log("-------------------------------------------");
-        Reporter.log("TEST " + Teststatus + " - LOG OUTPUT");
-        Reporter.log("-------------------------------------------");
-
-        for (ILoggingEvent e : appender.events) {
-            Reporter.log(ple.getLayout().doLayout(e));
-        }
-
-        appender.clear();
-        ple.stop();
+    public static void print(String result) {
+        Reporter.log(result);
     }
 
-    public static List<Logger> getLogger(ITestResult itr) {
+    public void writeLog(ITestResult itr, String Teststatus) {
+        System.out.println("onTestSuccess");
+        print("-------------------------------------------");
+        print("TEST " + Teststatus + " - LOG OUTPUT");
+        print("-------------------------------------------");
+
+        CustomAppender get = appender.get(getHash(this));
+
+        for (ILoggingEvent e : get.events) {
+            print(ple.getLayout().doLayout(e));
+        }
+
+        appender.get(getHash(this)).clear();
+    }
+
+    public static String getHash(Object th) {
+        return Thread.currentThread().getName() + th.hashCode();
+    }
+
+    public  static List<Logger> getLogger(ITestResult itr) {
         try {
             ArrayList<Logger> loggers = new ArrayList<>();
 
@@ -109,7 +139,6 @@ public class GlobalListener implements org.testng.ITestListener {
             // zeta.getClass().
             // System.out.println("Class : " + zeta.getCanonicalName());
             // System.out.println("Annotation : " + zeta.getAnnotations().length);
-
             if (annotation != null) {
 
                 // Add all classes listed in annotation to be intercepted logs for
