@@ -4,7 +4,9 @@ package com.handler;
 //~--- non-JDK imports --------------------------------------------------------
 
 import handlers.GlobalListener;
+import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
+
 import org.slf4j.LoggerFactory;
 import static org.testng.Assert.*;
 import org.testng.annotations.Listeners;
@@ -20,14 +22,27 @@ import org.testng.annotations.Listeners;
 public class UtilsNGTest
   {
     
-    private static final Logger LOG =  LoggerFactory.getLogger(UtilsNGTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(UtilsNGTest.class);
+    
+    private static final ConcurrentHashMap<Thread,LoggerAppenderPair> LOG_BUFFER = new ConcurrentHashMap<>();
 
     /**
      * @return the LOG
      */
     public static Logger getLOG() {
-        return LOG;
+           
+        LoggerAppenderPair current = LOG_BUFFER.get(Thread.currentThread());
+        if (current == null)
+        {
+            current = LoggerFactory2.configureLogger(UtilsNGTest.class, (ch.qos.logback.classic.Logger) LOG);
+            LOG_BUFFER.put(Thread.currentThread(), current);            
+        }
+        
+        return current.getLogger();
     }
+    
+    
+    
     
     public UtilsNGTest() {}
 
