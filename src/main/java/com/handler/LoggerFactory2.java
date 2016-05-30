@@ -8,7 +8,7 @@ import handlers.CustomAppender;
 
 public class LoggerFactory2 {
     public static LoggerAppenderPair configureLogger(Class logclass, Logger append) {
-        Logger         rootLogger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+        Logger         rootLogger = (Logger) LoggerFactory.getLogger(Thread.currentThread().getName());
         CustomAppender appender   = new CustomAppender();
 
         appender.getExternalLoggers().add(append);

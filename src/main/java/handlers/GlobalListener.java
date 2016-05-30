@@ -3,6 +3,7 @@ package handlers;
 import java.lang.reflect.Field;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
@@ -14,6 +15,7 @@ import org.testng.ITestContext;
 import org.testng.ITestResult;
 import org.testng.Reporter;
 
+import com.handler.LoggerAppenderPair;
 import com.handler.Utils;
 
 import annotations.ListenForLog;
@@ -22,8 +24,7 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.ILoggingEvent;
-import com.handler.LoggerAppenderPair;
-import java.util.HashMap;
+import com.handler.LoggerFactory2;
 
 /**
  * Class description
@@ -36,25 +37,27 @@ import java.util.HashMap;
 public class GlobalListener implements org.testng.ITestListener {
 
     // Define a hash map as each distinc thread will have distinct appender
-   
-    PatternLayoutEncoder                                   ple      = new PatternLayoutEncoder();
+    PatternLayoutEncoder ple = new PatternLayoutEncoder();
 
-    
-    
-    
     @Override
     public void onFinish(ITestContext itc) {
-        System.out.println("onFinish "+getHash(this));
+        System.out.println("onFinish " + getHash(this));
     }
 
     /**
-     * Here multiple logging queues should be started to separate 
+     * Here multiple logging queues should be started to separate
      * logging streams
-     * @param itc 
+     * @param itc
      */
     @Override
     public void onStart(ITestContext itc) {
-        System.out.println("onStart "+getHash(this));
+        System.out.println("onStart " + getHash(this));
+        LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+
+        ple.setPattern("%date %level [%thread] %logger %msg%n");
+        ple.setContext(lc);
+        ple.stop();
+        ple.start();
     }
 
     @Override
@@ -74,28 +77,32 @@ public class GlobalListener implements org.testng.ITestListener {
 
     @Override
     public void onTestStart(ITestResult itr) {
-        System.out.println("Test start : " + getHash(this));
+        System.out.println("Test start : " + itr.getName() +" "+ Thread.currentThread().getName());
 
-        LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+      
 
-        ple.setPattern("%date %level [%thread] %logger %msg%n");
-        ple.setContext(lc);
-        ple.stop();
-        ple.start();
+        // ArrayList<Logger>   log     = (ArrayList<Logger>) getLogger(itr);
+        CustomAppender                                current = null;
+        ConcurrentHashMap<Thread, LoggerAppenderPair> lap     = getLoggerAppenderPairs(itr);
 
-        ArrayList<Logger>   log     = (ArrayList<Logger>) getLogger(itr);
-        CustomAppender current = null;
-
-        ConcurrentHashMap<Thread, LoggerAppenderPair> lap = getLoggerAppenderPairs(itr);
-        current = lap.get(Thread.currentThread()).getAppender();
+       
+        LoggerAppenderPair lapr=null;
+        lapr = lap.get(Thread.currentThread());
+        
+       
+        if (lapr == null)
+        {
+            lapr = LoggerFactory2.configureLogger(itr.getInstance().getClass(), (ch.qos.logback.classic.Logger) getRootLogger(itr));
+            lap.put(Thread.currentThread(), lapr);            
+        }
+        
+        
+        current = lap.get(Thread.currentThread()).getAppender();       
+        
         current.getExternalLoggers().clear();
-        current.setExternalLoggers(log);
-
+        current.getExternalLoggers().add(getRootLogger(itr));
         current.stop();
         current.start();
-
-        
-         
     }
 
     @Override
@@ -113,50 +120,23 @@ public class GlobalListener implements org.testng.ITestListener {
         print("TEST " + Teststatus + " - LOG OUTPUT");
         print("-------------------------------------------");
 
-        CustomAppender current = null;
+        CustomAppender                                current = null;
+        ConcurrentHashMap<Thread, LoggerAppenderPair> lap     = getLoggerAppenderPairs(itr);
 
-        ConcurrentHashMap<Thread, LoggerAppenderPair> lap = getLoggerAppenderPairs(itr);
         current = lap.get(Thread.currentThread()).getAppender();
 
         for (ILoggingEvent e : current.events) {
             print(ple.getLayout().doLayout(e));
         }
-
         current.clear();
+        current.getExternalLoggers().clear();
     }
 
     public static String getHash(Object th) {
         return Thread.currentThread().getName() + th.hashCode();
     }
-    
-    
-    public static ConcurrentHashMap<Thread,LoggerAppenderPair> getLoggerAppenderPairs(ITestResult itr)
-    {
-        try {
-            Class c   = Class.forName(itr.getInstanceName());
-            Field log = c.getDeclaredField("LOG_BUFFER");
-            log.setAccessible(true);     
-            ConcurrentHashMap<Thread,LoggerAppenderPair> lap = (ConcurrentHashMap<Thread,LoggerAppenderPair>) log.get(null);
-            return lap;
-            
-            
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(GlobalListener.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (NoSuchFieldException ex) {
-            java.util.logging.Logger.getLogger(GlobalListener.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (SecurityException ex) {
-            java.util.logging.Logger.getLogger(GlobalListener.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IllegalArgumentException ex) {
-            java.util.logging.Logger.getLogger(GlobalListener.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(GlobalListener.class.getName()).log(Level.SEVERE, null, ex);
-        }
-     
-        return null;
-          
-    }
 
-    public  static List<Logger> getLogger(ITestResult itr) {
+    public static List<Logger> getLogger(ITestResult itr) {
         try {
             ArrayList<Logger> loggers = new ArrayList<>();
 
@@ -191,17 +171,59 @@ public class GlobalListener implements org.testng.ITestListener {
             }
 
             // Add test instance class logger to appender
-//            Class c   = Class.forName(itr.getInstanceName());
-//            Field log = c.getDeclaredField("LOG");
+//          Class c   = Class.forName(itr.getInstanceName());
+//          Field log = c.getDeclaredField("LOG");
 //
-//            log.setAccessible(true);
+//          log.setAccessible(true);
 //
-//            Logger l = (Logger) log.get(null);
+//          Logger l = (Logger) log.get(null);
 //
-//            loggers.add(l);
-
+//          loggers.add(l);
             return loggers;
-        } catch (SecurityException | IllegalArgumentException
+        } catch (SecurityException | IllegalArgumentException | IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(GlobalListener.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return null;
+    }
+
+    public static ConcurrentHashMap<Thread, LoggerAppenderPair> getLoggerAppenderPairs(ITestResult itr) {
+        try {
+            Class c   = Class.forName(itr.getInstanceName());
+            Field log = c.getDeclaredField("LOG_BUFFER");
+
+            log.setAccessible(true);
+
+            ConcurrentHashMap<Thread, LoggerAppenderPair> lap = (ConcurrentHashMap<Thread,
+                                                                                   LoggerAppenderPair>) log.get(null);
+
+            return lap;
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(GlobalListener.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NoSuchFieldException ex) {
+            java.util.logging.Logger.getLogger(GlobalListener.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SecurityException ex) {
+            java.util.logging.Logger.getLogger(GlobalListener.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalArgumentException ex) {
+            java.util.logging.Logger.getLogger(GlobalListener.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(GlobalListener.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return null;
+    }
+
+    public static Logger getRootLogger(ITestResult itr) {
+        try {
+            Class c   = Class.forName(itr.getInstanceName());
+            Field log = c.getDeclaredField("LOG");
+
+            log.setAccessible(true);
+
+            Logger l = (Logger) log.get(null);
+
+            return l;
+        } catch (ClassNotFoundException | NoSuchFieldException | SecurityException | IllegalArgumentException
                  | IllegalAccessException ex) {
             java.util.logging.Logger.getLogger(GlobalListener.class.getName()).log(Level.SEVERE, null, ex);
         }

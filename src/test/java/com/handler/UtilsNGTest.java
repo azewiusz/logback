@@ -29,14 +29,14 @@ public class UtilsNGTest
     /**
      * @return the LOG
      */
-    public static Logger getLOG() {
+    public  Logger getLOG() {
            
         LoggerAppenderPair current = LOG_BUFFER.get(Thread.currentThread());
-        if (current == null)
-        {
-            current = LoggerFactory2.configureLogger(UtilsNGTest.class, (ch.qos.logback.classic.Logger) LOG);
-            LOG_BUFFER.put(Thread.currentThread(), current);            
-        }
+//        if (current == null)
+//        {
+//            current = LoggerFactory2.configureLogger(UtilsNGTest.class, (ch.qos.logback.classic.Logger) LOG);
+//            LOG_BUFFER.put(Thread.currentThread(), current);            
+//        }
         
         return current.getLogger();
     }
@@ -61,7 +61,7 @@ public class UtilsNGTest
     /**
      * Test of superMethod method, of class Utils.
      */
-    @org.testng.annotations.Test
+    @org.testng.annotations.Test(testName = "superMethod")
     public void testSuperMethod() {
         getLOG().info("superMethod");
 
@@ -71,7 +71,7 @@ public class UtilsNGTest
     /**
      * Test of superMethod method, of class Utils.
      */
-    @org.testng.annotations.Test
+    @org.testng.annotations.Test(testName="MethodA")
     public void testMethodA() {
         getLOG().info("MethodA");
         Utils.doOperationA();
