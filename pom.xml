@@ -20,6 +20,13 @@
             <type>jar</type>
                 
         </dependency>
+        <!-- http://mvnrepository.com/artifact/xerces/xerces -->
+        <dependency>
+            <groupId>xerces</groupId>
+            <artifactId>xerces</artifactId>
+            <version>2.4.0</version>
+        </dependency>
+
 
     </dependencies>
     <build>

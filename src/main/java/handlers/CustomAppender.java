@@ -41,10 +41,11 @@ public class CustomAppender extends AppenderBase<ILoggingEvent>
         events.add(e);
         System.out.println("Appender event " + e.getMessage() + " Thread "+Thread.currentThread().getName() + " "+this.hashCode());
         
-//        for(Logger l : externalLoggers)
-//        {
-//           l.callAppenders(e);
-//        }
+        // Below is optional
+        for(Logger l : externalLoggers)
+        {
+           l.callAppenders(e);
+        }
         
     }
 

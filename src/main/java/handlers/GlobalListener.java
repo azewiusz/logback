@@ -3,10 +3,8 @@ package handlers;
 import java.lang.reflect.Field;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 
 import org.slf4j.LoggerFactory;
@@ -25,6 +23,7 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import com.handler.LoggerFactory2;
+import com.handler.XPathService;
 
 /**
  * Class description
@@ -52,9 +51,16 @@ public class GlobalListener implements org.testng.ITestListener {
     @Override
     public void onStart(ITestContext itc) {
         System.out.println("onStart " + getHash(this));
+        
+        
+        String htmlReportPattern = XPathService.extractXPathValue("(//Pattern[ancestor::appender[@name='JUNITREPORT']])[1]");
+        
+        if (htmlReportPattern==null)
+            htmlReportPattern = "%date %level [%thread] %logger %msg%n";
+        
         LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
 
-        ple.setPattern("%date %level [%thread] %logger %msg%n");
+        ple.setPattern(htmlReportPattern);
         ple.setContext(lc);
         ple.stop();
         ple.start();
@@ -92,15 +98,15 @@ public class GlobalListener implements org.testng.ITestListener {
        
         if (lapr == null)
         {
-            lapr = LoggerFactory2.configureLogger(itr.getInstance().getClass(), (ch.qos.logback.classic.Logger) getRootLogger(itr));
+            lapr = LoggerFactory2.configureLogger(itr.getInstance().getClass(), null);
             lap.put(Thread.currentThread(), lapr);            
         }
         
         
         current = lap.get(Thread.currentThread()).getAppender();       
         
-        current.getExternalLoggers().clear();
-        current.getExternalLoggers().add(getRootLogger(itr));
+      //  current.getExternalLoggers().clear();
+      //  current.getExternalLoggers().add(getRootLogger(itr));
         current.stop();
         current.start();
     }
@@ -225,6 +231,12 @@ public class GlobalListener implements org.testng.ITestListener {
             return l;
         } catch (ClassNotFoundException | NoSuchFieldException | SecurityException | IllegalArgumentException
                  | IllegalAccessException ex) {
+            if (ex instanceof NoSuchFieldException)
+            {
+                
+            }
+            else
+                
             java.util.logging.Logger.getLogger(GlobalListener.class.getName()).log(Level.SEVERE, null, ex);
         }
 
