@@ -83,7 +83,7 @@ public class GlobalListener implements org.testng.ITestListener {
 
     @Override
     public void onTestStart(ITestResult itr) {
-        System.out.println("Test start : " + itr.getName() +" "+ Thread.currentThread().getName());
+       // System.out.println("Test start : " + itr.getName() +" "+ Thread.currentThread().getName());
 
       
 
