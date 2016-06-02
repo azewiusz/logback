@@ -37,7 +37,7 @@ public class GlobalListener implements org.testng.ITestListener {
 
     @Override
     public void onFinish(ITestContext itc) {
-        System.out.println("onFinish " + getHash(this));
+       // System.out.println("onFinish " + getHash(this));
     }
 
     /**
@@ -47,7 +47,7 @@ public class GlobalListener implements org.testng.ITestListener {
      */
     @Override
     public void onStart(ITestContext itc) {
-        System.out.println("onStart " + getHash(this));
+       // System.out.println("onStart " + getHash(this));
         
         
         String htmlReportPattern = XPathService.extractXPathValue("(//Pattern[ancestor::appender[@name='JUNITREPORT']])[1]");
@@ -111,7 +111,7 @@ public class GlobalListener implements org.testng.ITestListener {
     }
 
     public void writeLog(ITestResult itr, String Teststatus) {
-        System.out.println("onTestSuccess");
+  
         print("-------------------------------------------");
         print("TEST " + Teststatus + " - LOG OUTPUT");
         print("-------------------------------------------");
@@ -146,44 +146,13 @@ public class GlobalListener implements org.testng.ITestListener {
                                                                                    LoggerAppenderPair>) log.get(null);
 
             return lap;
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(GlobalListener.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (NoSuchFieldException ex) {
-            java.util.logging.Logger.getLogger(GlobalListener.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (SecurityException ex) {
-            java.util.logging.Logger.getLogger(GlobalListener.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IllegalArgumentException ex) {
-            java.util.logging.Logger.getLogger(GlobalListener.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
+        } catch (ClassNotFoundException | NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException ex) {
             java.util.logging.Logger.getLogger(GlobalListener.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         return null;
     }
-
-    public static Logger getRootLogger(ITestResult itr) {
-        try {
-            Class c   = Class.forName(itr.getInstanceName());
-            Field log = c.getDeclaredField("LOG");
-
-            log.setAccessible(true);
-
-            Logger l = (Logger) log.get(null);
-
-            return l;
-        } catch (ClassNotFoundException | NoSuchFieldException | SecurityException | IllegalArgumentException
-                 | IllegalAccessException ex) {
-            if (ex instanceof NoSuchFieldException)
-            {
-                
-            }
-            else
-                
-            java.util.logging.Logger.getLogger(GlobalListener.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        return null;
-    }
+  
 }
 
 

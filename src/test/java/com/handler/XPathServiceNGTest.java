@@ -56,7 +56,7 @@ public class XPathServiceNGTest extends AbstractMultiLoggerSkeleton {
     }
        @Test
     public void xpath3() {
-        getLOG().info("xpath2");
+        getLOG().info("xpath3");
         Utils.doOperationA();
         Utils.doOperationA();
         getLOG().info("Step 1. XP3 XPATH 1");
