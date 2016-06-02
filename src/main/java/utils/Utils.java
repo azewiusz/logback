@@ -7,24 +7,18 @@ package com.handler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import skeletons.AbstractMultiLoggerSkeleton;
 
 /**
  *
  * @author Thomasz
  */
-public class Utils {
+public class Utils extends AbstractMultiLoggerSkeleton {
     
-    
-    public final static Logger LOG = LoggerFactory.getLogger(Utils.class);
-    
-    public static String superMethod(String a, String b)
-    {
-        return a+b;
-    }
     
     public static void doOperationA()
     {
-        LOG.info("Operation A");
+        getLOG().info("Operation A");
     }
     
     

@@ -1,13 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.handler;
 
 import handlers.GlobalListener;
-import java.util.concurrent.ConcurrentHashMap;
-import org.slf4j.Logger;
 import static org.testng.Assert.*;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
@@ -15,24 +8,12 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
+import skeletons.AbstractMultiLoggerSkeleton;
+import utils.Utils2;
 
-/**
- *
- * @author tomasz.kosinski
- */
 @Listeners(GlobalListener.class)
-public class XPathServiceNGTest {
-    
-    private static final ConcurrentHashMap<Thread, LoggerAppenderPair> LOG_BUFFER = new ConcurrentHashMap<>();
+public class XPathServiceNGTest extends AbstractMultiLoggerSkeleton {
 
-       /**
-     * @return the LOG
-     */
-    public Logger getLOG() {
-        LoggerAppenderPair current = LOG_BUFFER.get(Thread.currentThread());
-        return current.getLogger();
-    }
-    
     public XPathServiceNGTest() {
     }
 
@@ -58,7 +39,30 @@ public class XPathServiceNGTest {
     @Test
     public void testExtractXPathValue() {
         getLOG().info("extractXPathValue");
-        fail("Test Failed");
+        getLOG().info("Step 1. XPATH 1");
+        getLOG().info("Step 2. XPATH 2");
+        Utils.doOperationA();
+       // fail("Test Failed");
     }
-    
+     @Test
+    public void xpath2() {
+        getLOG().info("xpath2");
+        getLOG().info("Step 1. XP2 XPATH 1");
+        getLOG().info("Step 2. XP2 XPATH 2");
+        Utils.doOperationA();
+        Utils.doOperationA();
+        Utils2.doOperationB();
+       // fail("Test Failed");
+    }
+       @Test
+    public void xpath3() {
+        getLOG().info("xpath2");
+        Utils.doOperationA();
+        Utils.doOperationA();
+        getLOG().info("Step 1. XP3 XPATH 1");
+        getLOG().info("Step 2. XP3 XPATH 2");
+        Utils2.doOperationB();
+       // fail("Test Failed");
+    }
+
 }
