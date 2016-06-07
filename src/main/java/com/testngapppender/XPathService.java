@@ -3,11 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.handler;
+package com.testngapppender;
 
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.core.joran.util.ConfigurationWatchListUtil;
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.logging.Level;
@@ -23,7 +22,6 @@ import javax.xml.xpath.XPathFactory;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 /**
@@ -42,7 +40,7 @@ public class XPathService {
         LoggerContext loggerContext = ((ch.qos.logback.classic.Logger)LoggerFactory.getLogger(XPathService.class)).getLoggerContext();
         URL mainURL = ConfigurationWatchListUtil.getMainWatchURL(loggerContext);
         
-        System.out.println(""+mainURL.toString());
+       // System.out.println(""+mainURL.toString());
         
         try {
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();        
@@ -64,13 +62,7 @@ public class XPathService {
             
             
             
-        } catch (ParserConfigurationException ex) {
-            Logger.getLogger(XPathService.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (SAXException ex) {
-            Logger.getLogger(XPathService.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(XPathService.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (XPathExpressionException ex) {
+        } catch (ParserConfigurationException | SAXException | IOException | XPathExpressionException ex) {
             Logger.getLogger(XPathService.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;

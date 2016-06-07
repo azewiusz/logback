@@ -5,19 +5,20 @@
  */
 package utils;
 
-import skeletons.AbstractMultiLoggerSkeleton;
-import static skeletons.AbstractMultiLoggerSkeleton.getLOG;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author Tomasz Kosiński <azewiusz@gmail.com>
  */
-public class Utils2 extends AbstractMultiLoggerSkeleton {
+public class Utils2  {
      
+    public final static Logger log = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(Utils2.class);
     
     public static void doOperationB()
     {
-        getLOG().info("Operation B");
+        log.info("Operation B");
     }
     
     

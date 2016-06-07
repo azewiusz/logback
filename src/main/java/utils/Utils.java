@@ -3,22 +3,22 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.handler;
+package utils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import skeletons.AbstractMultiLoggerSkeleton;
 
 /**
  *
  * @author Thomasz
  */
-public class Utils extends AbstractMultiLoggerSkeleton {
+public class Utils  {
     
+    public final static Logger log = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(Utils.class);
     
     public static void doOperationA()
     {
-        getLOG().info("Operation A");
+        log.info("Operation A");
     }
     
     

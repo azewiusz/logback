@@ -1,14 +1,11 @@
 package com.handler;
 
-import java.util.concurrent.ConcurrentHashMap;
+//~--- non-JDK imports --------------------------------------------------------
 
+import utils.Utils;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import org.testng.annotations.Listeners;
-
-
-import handlers.GlobalListener;
-import skeletons.AbstractMultiLoggerSkeleton;
 import utils.Utils2;
 
 /**
@@ -18,11 +15,20 @@ import utils.Utils2;
  * @version        1.0, 16/05/23
  * @author         Tomasz Kosiński <azewiusz@gmail.com>
  */
-@Listeners(GlobalListener.class)
-public class UtilsNGTest extends AbstractMultiLoggerSkeleton {
-  
+
+public class UtilsNGTest  {
+    
+    public final static Logger log = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(UtilsNGTest.class);
+    
+    
     public UtilsNGTest() {}
 
+    public Logger getLOG()
+    {
+        return log;
+    }
+    
+    
     @org.testng.annotations.AfterClass
     public static void tearDownClass() throws Exception {}
 
@@ -73,7 +79,8 @@ public class UtilsNGTest extends AbstractMultiLoggerSkeleton {
         Utils2.doOperationB();
         Utils.doOperationA();
     }
-   @org.testng.annotations.BeforeClass
+
+    @org.testng.annotations.BeforeClass
     public static void setUpClass() throws Exception {}
 
     @org.testng.annotations.BeforeMethod
